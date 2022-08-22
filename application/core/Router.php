@@ -11,6 +11,7 @@ class Router{
         foreach ($arr as $key => $val) {
             $this->add($key, $val);
         }
+
     }
 
     public function add($route, $params){ // функция добавления маршрутов
@@ -18,7 +19,7 @@ class Router{
        $this->routes[$route] = $params;
     }
 
-    public function match(){ //функция которая проверяет есть ли такой маршрут
+    public function match(){ // функция которая проверяет есть ли такой маршрут
         $url = trim($_SERVER['REQUEST_URI'], '/');
         foreach ($this->routes as $route => $params) {
           if (preg_match($route, $url, $matches)) {
@@ -30,12 +31,19 @@ class Router{
     }
 
     public function run(){
+
       if ($this->match()){
-         $controller = 'application\controllers\\'.ucfirst($this->params['controller']).'Controller.php';
-         if (class_exists($controller)){
-             echo 'OK';
+         $path = 'application\controllers\\'.ucfirst($this->params['controller']).'Controller';
+         if (class_exists($path)){
+             $action = $this->params['action'].'Action';
+             if (method_exists($path, $action)){
+                $controller = new $path($this->params);
+                $controller->$action();
+             } else {
+                 echo 'Не найден экшн';
+             }
          } else {
-            echo 'Не найден '. $controller;
+            echo 'Не найден контроллер '. $path;
          }
 
       } else {
